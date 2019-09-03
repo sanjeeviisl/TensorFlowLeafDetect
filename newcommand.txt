@@ -1,0 +1,114 @@
+
+ 
+ toco --graph_def_file leafdisease_graph.pb \
+ --output_file leafdisease_graph.lite \
+ --input_format TENSORFLOW_GRAPHDEF \
+ --output_format TFLITE \
+ --input_shape=1,${IMAGE_SIZE},${IMAGE_SIZE},3 \
+ --input_array input \
+ --output_array final_result \
+ --inference_type FLOAT \
+ --input_data_type FLOAT
+ 
+ 
+ toco --graph_def_file leaf251_graph.pb \
+ --output_file leaf251_graph.lite \
+ --input_format TENSORFLOW_GRAPHDEF \
+ --output_format TFLITE \
+ --input_shape=1,${IMAGE_SIZE},${IMAGE_SIZE},3 \
+ --input_array input \
+ --output_array final_result \
+ --inference_type FLOAT \
+ --input_data_type FLOAT
+ 
+
+ python3 scripts/retrain.py   \
+ --bottleneck_dir=bottlenecks_leaf251 \
+ --summaries_dir=training_summaries_leaf251/basic \
+ --output_graph=leaf251_graph.pb \
+ --output_labels=leaf251_labels.txt \
+ --image_dir=../leaf_251_files/normalized_leaf/normalization\
+ --how_many_training_steps=14000\
+ --architecture mobilenet_1.0_224
+
+python3 -m scripts.label_image  
+ --image ../leaf_251_files/normalized_leaf/normalization/190._quercus_montana/13292231174834.jpg 
+ --graph leaf251_graph.pb  
+ --labels leaf251_labels.txt 
+ --input_layer=input
+
+
+
+
+python retrain.py   --image_dir=../leaf_251_files/leaf/
+
+i
+python3 retrain.py   --bottleneck_dir=bottlenecks1 \
+--summaries_dir=training_summaries/basic \
+--output_graph=retrained_graph.pb \
+--output_labels=retrained_labels.txt \
+--image_dir=../leaf_disease_38_types/leaf_disease \
+--architecture mobilenet_1.0_224
+
+
+--image_dir=../leaf_251_files/normalized_leaf/normalization
+
+
+ python3 -m scripts.label_image \
+ --image ../leaf_disease_38_types/leaf_disease/Blueberry___healthy/test.jpg \
+ --graph ../tools/retrained_graph.pb \
+ --labels ../tools/retrained_labels.txt
+
+python3 -m scripts.label_image \
+../leaf_disease_38_types/leaf_disease/Blueberry___healthy/test.jpg \
+../tools/retrained_graph.pb
+
+python3 -m scripts.label_image \
+ --image ../leaf_disease_38_types/leaf_disease/Blueberry___healthy/test.jpg \
+ --graph retrained_graph.pb \
+ --labels retrained_labels.txt
+
+
+ python3 -m tensorflow.python.tools.optimize_for_inference  \
+ --input=retrained_graph.pb   \
+ --output=optimized_graph.pb   \
+ --input_names="Placeholder"   \
+ --output_names="final_result"
+
+
+python3 -m scripts.quantize_graph \
+  --input=../tools/optimized_graph.pb \
+  --output=../tools/rounded_graph.pb \
+  --output_node_names=final_result \
+  --mode=weights_rounded
+
+python -m tensorflow.python.tools.optimize_for_inference \
+  --input=tf_files/retrained_graph.pb \
+  --output=tf_files/optimized_graph.pb \
+  --input_names="Cast" \
+  --output_names="final_result"
+
+
+
+python -m scripts.quantize_graph \
+  --input=tf_files/optimized_graph.pb \
+  --output=tf_files/rounded_graph.pb \
+  --output_node_names=final_result \
+  --mode=weights_rounded
+  
+  
+IMAGE_SIZE=224
+
+toco 
+--input_file=leaf_tf_files/retrained_graph.pb 
+--output_file=leaf_tf_files/optimized_graph.lite 
+--input_format=TENSORFLOW_GRAPHDEF 
+--output_format=TFLITE 
+--input_shape=1,${IMAGE_SIZE},${IMAGE_SIZE},3 
+--input_array=input 
+--output_array=final_result 
+--inference_type=FLOAT 
+--input_data_type=FLOAT
+
+
+
