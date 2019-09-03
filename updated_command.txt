@@ -1,0 +1,10 @@
+python scripts/retrain.py   \
+ --bottleneck_dir=bottlenecks_leaf251 \
+ --summaries_dir=training_summaries_leaf251/basic \
+ --output_graph=leaf251_graph.pb \
+ --output_labels=leaf251_labels.txt \
+ --image_dir=../leaf_251_files/normalized_leaf\
+ --how_many_training_steps=14000\
+ --architecture mobilenet_1.0_224
+
+
