@@ -15,6 +15,7 @@ python scripts/label_image.py\
  --input_layer input
 
 
+IMAGE_SIZE=224
 tflite_convert --graph_def_file leaf251_graph.pb \
  --output_file leaf251_graph.lite \
  --input_format TENSORFLOW_GRAPHDEF \
