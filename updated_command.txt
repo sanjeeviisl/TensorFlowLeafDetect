@@ -8,3 +8,21 @@ python scripts/retrain.py   \
  --architecture mobilenet_1.0_224
 
 
+python scripts/label_image.py\
+ --image  ../leaf_251_files/normalized_leaf/190._quercus_montana/quercus_montana_seg_0051.jpg\
+ --graph leaf251_graph.pb\
+ --labels leaf251_labels.txt\
+ --input_layer input
+
+
+tflite_convert --graph_def_file leaf251_graph.pb \
+ --output_file leaf251_graph.lite \
+ --input_format TENSORFLOW_GRAPHDEF \
+ --output_format TFLITE \
+ --input_shape=1,${IMAGE_SIZE},${IMAGE_SIZE},3 \
+ --input_array input \
+ --output_array final_result \
+ --inference_type FLOAT \
+ --input_data_type FLOAT
+
+
